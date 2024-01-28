@@ -233,6 +233,11 @@ impl CppInfo {
         self.libraries.extend(other.libraries);
     }
 
+    #[doc = "Get `LD_LIBRARY_PATH` environment variable for runtime linking."]
+    pub fn ld_library_path(&self) -> String {
+        self.library_search_paths.iter().map(|x| format!("{}", x.display())).collect::<Vec<_>>().join(":")
+    }
+
     #[doc = "Get command line arguments passed to either `gcc` or `clang` for include directories."]
     pub fn gcc_clang_include_dir_args<'a>(&'a self) -> impl Iterator<Item = String> + 'a {
         self.include_dirs
