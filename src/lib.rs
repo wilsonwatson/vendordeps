@@ -1,0 +1,267 @@
+#![warn(rustdoc::missing_crate_level_docs)]
+#![doc = "Parse and Download artifacts from the [Vendordep JSON format](https://docs.wpilib.org/en/stable/docs/software/vscode-overview/3rd-party-libraries.html#what-are-vendor-dependencies)."]
+
+use std::path::Path;
+
+use serde::Deserialize;
+
+pub mod error;
+pub use error::Result;
+
+#[doc = "A reference to another vendordep."]
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PackageSpec {
+    #[doc = "The `uuid` field of the other vendordep."]
+    pub uuid: String,
+    #[doc = "The message printed if this package is also included."]
+    pub error_message: String,
+    #[doc = "File name of resulting JSON file."]
+    pub offline_file_name: String,
+}
+
+#[doc = "A dependency for Java Compilation."]
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct JavaDependency {
+    #[doc = "Maven group."]
+    pub group_id: String,
+    #[doc = "Maven artifact."]
+    pub artifact_id: String,
+    #[doc = "Maven version."]
+    pub version: String,
+}
+
+#[doc = "A native dependency required for Java."]
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct JniDependency {
+    #[doc = "Maven group."]
+    pub group_id: String,
+    #[doc = "Maven artifact."]
+    pub artifact_id: String,
+    #[doc = "Maven version."]
+    pub version: String,
+    #[doc = "Whether or not the artifact is in a `.jar` file. If false, looks for a `.zip` file instead."]
+    pub is_jar: bool,
+    // Idk what this does
+    pub skip_invalid_platforms: bool,
+    // Idk what this does
+    pub valid_platforms: Vec<String>,
+    // Idk what this does
+    pub sim_mode: String,
+}
+
+macro_rules! binary_platform {
+    ($name:ident {$($variant:ident = $val:literal),* $(,)?}) => {
+        #[doc = "Valid platforms for WPILib execution."]
+        #[derive(Debug, Deserialize, Clone, Copy, PartialEq, Eq)]
+        pub enum $name {
+            $(
+                #[serde(rename = $val)]
+                $variant,
+            )*
+        }
+
+        impl $name {
+            pub fn to_str(&self) -> &'static str {
+                match self {
+                    $(
+                        Self::$variant => $val,
+                    )*
+                }
+            }
+        }
+    };
+}
+
+binary_platform!(BinaryPlatform {
+    LinuxArm32 = "linuxarm32",
+    LinuxArm64 = "linuxarm64",
+    LinuxAthena = "linuxathena",
+    LinuxX86_64 = "linuxx86-64",
+    OsxUniversal = "osxuniversal",
+    WindowsArm64 = "windowsarm64",
+    WindowsX86_64 = "windowsx86-64",
+    Headers = "headers",
+});
+
+#[doc = "A dependency for C++ compilation."]
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CppDependency {
+    #[doc = "Maven group."]
+    pub group_id: String,
+    #[doc = "Maven artifact."]
+    pub artifact_id: String,
+    #[doc = "Maven version."]
+    pub version: String,
+    #[doc = "Instead of shipping headers with individual platform artifacts, headers are stored in a separate artifact. This value is used in place of the 'platform' to get the url."]
+    pub header_classifier: String,
+}
+
+impl CppDependency {
+    #[doc = "Resolve Maven URL."]
+    pub fn get_url(
+        &self,
+        maven_url: &str,
+        platform: &str,
+        is_static: bool,
+        is_debug: bool,
+    ) -> String {
+        format!(
+            "{0}{1}/{2}/{3}/{2}-{3}-{4}{5}{6}.zip",
+            maven_url,
+            self.group_id.replace('.', "/"),
+            self.artifact_id,
+            self.version,
+            platform,
+            if is_static { "static" } else { "" },
+            if is_debug { "debug" } else { "" }
+        )
+    }
+
+    #[doc = "Download Maven artifact and unzip it to a directory."]
+    pub async fn download_library_to_folder<P: AsRef<Path>>(
+        &self,
+        out_folder: P,
+        maven_url: &str,
+        platform: BinaryPlatform,
+        is_static: bool,
+        is_debug: bool,
+    ) -> Result<()> {
+        let url = self.get_url(maven_url, platform.to_str(), is_static, is_debug);
+        let res = std::io::Cursor::new(
+            reqwest::get(url)
+                .await?
+                .bytes()
+                .await?
+                .to_vec(),
+        );
+        let mut zip = zip::ZipArchive::new(res)?;
+        for i in 0..zip.len() {
+            let mut f = zip.by_index(i)?;
+            if f.name().ends_with("/") {
+                continue;
+            }
+            let outpath = out_folder.as_ref().join(
+                f.enclosed_name()
+                    .ok_or_else(|| error::Error::ZipSecurityError)?,
+            );
+            _ = std::fs::create_dir_all(outpath.parent().unwrap());
+            let mut outf = std::fs::File::create(outpath)?;
+            std::io::copy(&mut f, &mut outf)?;
+        }
+        Ok(())
+    }
+
+    #[doc = "Download headers and unzip them to a directory."]
+    pub async fn download_headers_to_folder<P: AsRef<Path>>(
+        &self,
+        out_folder: P,
+        maven_url: &str,
+    ) -> Result<()> {
+        self.download_library_to_folder(
+            out_folder,
+            maven_url,
+            BinaryPlatform::Headers,
+            false,
+            false,
+        )
+        .await
+    }
+}
+
+#[doc = "Vendor Dependency Format."]
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VendorDep {
+    #[doc = "File name that GradleRIO will write to `vendordeps/` directory."]
+    pub file_name: String,
+    #[doc = "Name of vendor library."]
+    pub name: String,
+    #[doc = "Vendor library version. Usually is the same as each artifact's Maven version."]
+    pub version: String,
+    #[doc = "Supported year."]
+    pub frc_year: u32,
+    #[doc = "UUID used for checking compatibility."]
+    pub uuid: String,
+    #[doc = "List of Maven repositories to search for Maven artifacts."]
+    pub maven_urls: Vec<String>,
+    #[doc = "URL for this. If up to date, the contents of the url should reproduce this [`VendorDep`] value."]
+    pub json_url: String,
+    #[doc = "A list of other [`VendorDep`]s this is explicitly incompatible with. Generally this includes older versions which would introduce name collisions."]
+    pub conflicts_with: Vec<PackageSpec>,
+    #[doc = "A list of Java source dependencies."]
+    pub java_dependencies: Vec<JavaDependency>,
+    #[doc = "A list of Java native dependencies."]
+    pub jni_dependencies: Vec<JniDependency>,
+    #[doc = "A list of C++ dependencies."]
+    pub cpp_dependencies: Vec<CppDependency>,
+}
+
+impl VendorDep {
+    #[doc = "Download JSON from url and parse it."]
+    pub async fn from_url(url: &str) -> Result<Self> {
+        Ok(reqwest::get(url).await?.json::<Self>().await?)
+    }
+}
+
+macro_rules! wpi_cpp_dep {
+    ($name:ident) => {
+        CppDependency {
+            group_id: concat!("edu.wpi.first.", stringify!($name)).to_string(),
+            artifact_id: concat!(stringify!($name), "-cpp").to_string(),
+            version: "2024.2.1".to_string(),
+            header_classifier: "headers".to_string(),
+        }
+    };
+}
+
+#[doc = "Create a [`VendorDep`] that includes all C++ libraries that come with WPILib."]
+pub fn wpilib_as_a_vendordep() -> VendorDep {
+    VendorDep {
+        file_name: "".to_string(),
+        name: "".to_string(),
+        version: "".to_string(),
+        frc_year: 2024,
+        uuid: "".to_string(),
+        maven_urls: vec!["https://frcmaven.wpi.edu/artifactory/release/".to_string()],
+        json_url: "".to_string(),
+        conflicts_with: vec![],
+        java_dependencies: vec![],
+        jni_dependencies: vec![],
+        cpp_dependencies: vec![
+            wpi_cpp_dep!(hal),
+            wpi_cpp_dep!(ntcore),
+            wpi_cpp_dep!(wpimath),
+            wpi_cpp_dep!(wpinet),
+            wpi_cpp_dep!(wpiutil),
+            wpi_cpp_dep!(wpilibc),
+        ],
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use tempfile::tempdir;
+
+    use crate::VendorDep;
+
+    #[test]
+    fn ctre_2024_headers() {
+        tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+            .block_on(async {
+                let res = VendorDep::from_url("https://maven.ctr-electronics.com/release/com/ctre/phoenix6/latest/Phoenix6-frc2024-latest.json").await;
+                assert!(res.is_ok(), "Failed to download from url");
+                let ctre_vendordep = res.unwrap();
+                let temp_dir = tempdir().unwrap();
+                let res = ctre_vendordep.cpp_dependencies[0].download_headers_to_folder(temp_dir.path(), &ctre_vendordep.maven_urls[0]).await;
+                assert!(res.is_ok(), "Failed to download headers");
+                assert!(temp_dir.path().join("ctre/phoenix6/CANcoder.hpp").exists(), "Did not unzip properly!");
+            })
+    }
+}
