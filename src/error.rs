@@ -13,6 +13,8 @@ pub enum Error {
     IoError(#[from] std::io::Error),
     #[error("Could not find Maven artifact {0}.")]
     NotFoundError(String),
+    #[error("Could not search directory for C++ library objects.")]
+    JwalkError(#[from] jwalk::Error),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

@@ -1,7 +1,10 @@
 #![warn(rustdoc::missing_crate_level_docs)]
 #![doc = "Parse and Download artifacts from the [Vendordep JSON format](https://docs.wpilib.org/en/stable/docs/software/vscode-overview/3rd-party-libraries.html#what-are-vendor-dependencies)."]
 
-use std::path::Path;
+use std::{
+    collections::HashSet,
+    path::{Path, PathBuf},
+};
 
 use serde::Deserialize;
 
@@ -131,13 +134,7 @@ impl CppDependency {
         is_debug: bool,
     ) -> Result<()> {
         let url = self.get_url(maven_url, platform.to_str(), is_static, is_debug);
-        let res = std::io::Cursor::new(
-            reqwest::get(url)
-                .await?
-                .bytes()
-                .await?
-                .to_vec(),
-        );
+        let res = std::io::Cursor::new(reqwest::get(url).await?.bytes().await?.to_vec());
         let mut zip = zip::ZipArchive::new(res)?;
         for i in 0..zip.len() {
             let mut f = zip.by_index(i)?;
@@ -169,6 +166,46 @@ impl CppDependency {
             false,
         )
         .await
+    }
+}
+
+#[doc = "Info needed for C++ compilation. Retrieved as a result of [`VendorDep::download_all_cpp_deps_to_folder`]."]
+#[derive(Debug, Clone)]
+pub struct CppInfo {
+    #[doc = "Root directories containing headers."]
+    pub include_dirs: Vec<PathBuf>,
+    #[doc = "Directories containing library objects."]
+    pub library_search_paths: Vec<PathBuf>,
+    #[doc = "Library names."]
+    pub libraries: Vec<String>,
+}
+
+impl CppInfo {
+    #[doc = "Get command line arguments passed to either `gcc` or `clang` for include directories."]
+    pub fn gcc_clang_include_dir_args<'a>(&'a self) -> impl Iterator<Item = String> + 'a {
+        self.include_dirs
+            .iter()
+            .map(|x| format!("-I{}", x.display()))
+    }
+
+    #[doc = "Get command line arguments passed to either `gcc` or `clang` for library search paths."]
+    pub fn gcc_clang_library_search_path_args<'a>(&'a self) -> impl Iterator<Item = String> + 'a {
+        self.library_search_paths
+            .iter()
+            .map(|x| format!("-L{}", x.display()))
+    }
+
+    #[doc = "Get command line arguments passed to either `gcc` or `clang` for libraries."]
+    pub fn gcc_clang_library_args<'a>(&'a self) -> impl Iterator<Item = String> + 'a {
+        self.libraries.iter().map(|x| format!("-l{}", x))
+    }
+
+    #[doc = "Get command line arguments passed to either `gcc` or `clang`. "]
+    #[doc = "A combination of [`Self::gcc_clang_include_dir_args`], [`Self::gcc_clang_library_search_path_args`], and [`Self::gcc_clang_library_args`]."]
+    pub fn gcc_clang_args<'a>(&'a self) -> impl Iterator<Item = String> + 'a {
+        self.gcc_clang_include_dir_args()
+            .chain(self.gcc_clang_library_search_path_args())
+            .chain(self.gcc_clang_library_args())
     }
 }
 
@@ -206,8 +243,17 @@ impl VendorDep {
         Ok(reqwest::get(url).await?.json::<Self>().await?)
     }
 
-    pub async fn download_all_cpp_deps_to_folder<P: AsRef<Path>>(&self, p: P, binary_platform: BinaryPlatform, is_static: bool, is_debug: bool) -> Result<()> {
+    pub async fn download_all_cpp_deps_to_folder<P: AsRef<Path>>(
+        &self,
+        p: P,
+        binary_platform: BinaryPlatform,
+        is_static: bool,
+        is_debug: bool,
+    ) -> Result<CppInfo> {
         let path = p.as_ref();
+        let mut include_dirs = Vec::new();
+        let mut library_search_paths = Vec::new();
+        let mut libraries = Vec::new();
         for dep in &self.cpp_dependencies {
             let dep_path = path.join(&dep.artifact_id);
             let header_path = dep_path.join("include");
@@ -221,23 +267,59 @@ impl VendorDep {
                         _ => {}
                     }
                 }
-                return Err(crate::error::Error::NotFoundError(format!("{}:{}:{}", dep.group_id, dep.artifact_id, dep.version)));
+                return Err(crate::error::Error::NotFoundError(format!(
+                    "{}:{}:{}",
+                    dep.group_id, dep.artifact_id, dep.version
+                )));
             }
+            include_dirs.push(header_path);
             let libs_path = dep_path.join("libs");
             'outer: loop {
                 for maven_url in &self.maven_urls {
                     match dep
-                        .download_library_to_folder(&libs_path, maven_url.as_str(), binary_platform, is_static, is_debug)
+                        .download_library_to_folder(
+                            &libs_path,
+                            maven_url.as_str(),
+                            binary_platform,
+                            is_static,
+                            is_debug,
+                        )
                         .await
                     {
                         Ok(_) => break 'outer,
                         _ => {}
                     }
                 }
-                return Err(crate::error::Error::NotFoundError(format!("{}:{}:{}", dep.group_id, dep.artifact_id, dep.version)));
+                return Err(crate::error::Error::NotFoundError(format!(
+                    "{}:{}:{}",
+                    dep.group_id, dep.artifact_id, dep.version
+                )));
             }
+            let mut temp_search_paths = HashSet::new();
+            for item in jwalk::WalkDir::new(libs_path) {
+                let item = item?;
+                if let Some(stem) = item.path().file_stem() {
+                    let stem = stem.to_string_lossy();
+                    match item.path().extension().and_then(|x| x.to_str()) {
+                        Some("so") => {
+                            temp_search_paths.insert(item.parent_path().to_path_buf());
+                            libraries.push(stem[3..].to_string());
+                        }
+                        Some("dll") => {
+                            temp_search_paths.insert(item.parent_path().to_path_buf());
+                            libraries.push(stem.to_string());
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            library_search_paths.extend(temp_search_paths);
         }
-        Ok(())
+        Ok(CppInfo {
+            include_dirs,
+            library_search_paths,
+            libraries,
+        })
     }
 }
 
