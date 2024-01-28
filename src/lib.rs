@@ -181,6 +181,22 @@ pub struct CppInfo {
 }
 
 impl CppInfo {
+    #[doc = "Create new [`CppInfo`] with no include directories or libraries."]
+    pub fn new_empty() -> Self {
+        Self {
+            include_dirs: vec![],
+            library_search_paths: vec![],
+            libraries: vec![]
+        }
+    }
+
+    #[doc = "Combine another [`CppInfo`] value into this one."]
+    pub fn extend(&mut self, other: Self) {
+        self.include_dirs.extend(other.include_dirs);
+        self.library_search_paths.extend(other.library_search_paths);
+        self.libraries.extend(other.libraries);
+    }
+
     #[doc = "Get command line arguments passed to either `gcc` or `clang` for include directories."]
     pub fn gcc_clang_include_dir_args<'a>(&'a self) -> impl Iterator<Item = String> + 'a {
         self.include_dirs
