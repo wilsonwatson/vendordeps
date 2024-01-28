@@ -205,6 +205,40 @@ impl VendorDep {
     pub async fn from_url(url: &str) -> Result<Self> {
         Ok(reqwest::get(url).await?.json::<Self>().await?)
     }
+
+    pub async fn download_all_cpp_deps_to_folder<P: AsRef<Path>>(&self, p: P, binary_platform: BinaryPlatform, is_static: bool, is_debug: bool) -> Result<()> {
+        let path = p.as_ref();
+        for dep in &self.cpp_dependencies {
+            let dep_path = path.join(&dep.artifact_id);
+            let header_path = dep_path.join("include");
+            'outer: loop {
+                for maven_url in &self.maven_urls {
+                    match dep
+                        .download_headers_to_folder(&header_path, maven_url.as_str())
+                        .await
+                    {
+                        Ok(_) => break 'outer,
+                        _ => {}
+                    }
+                }
+                return Err(crate::error::Error::NotFoundError(format!("{}:{}:{}", dep.group_id, dep.artifact_id, dep.version)));
+            }
+            let libs_path = dep_path.join("libs");
+            'outer: loop {
+                for maven_url in &self.maven_urls {
+                    match dep
+                        .download_library_to_folder(&libs_path, maven_url.as_str(), binary_platform, is_static, is_debug)
+                        .await
+                    {
+                        Ok(_) => break 'outer,
+                        _ => {}
+                    }
+                }
+                return Err(crate::error::Error::NotFoundError(format!("{}:{}:{}", dep.group_id, dep.artifact_id, dep.version)));
+            }
+        }
+        Ok(())
+    }
 }
 
 macro_rules! wpi_cpp_dep {

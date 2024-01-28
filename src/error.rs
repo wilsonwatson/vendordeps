@@ -11,6 +11,8 @@ pub enum Error {
     ZipSecurityError,
     #[error("Error reading/writing files.")]
     IoError(#[from] std::io::Error),
+    #[error("Could not find Maven artifact {0}.")]
+    NotFoundError(String),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
