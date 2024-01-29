@@ -84,7 +84,8 @@ pub struct JniDependency {
     // Idk what this does
     pub valid_platforms: Vec<String>,
     // Idk what this does
-    pub sim_mode: String,
+    #[serde(default)]
+    pub sim_mode: Option<String>,
 }
 
 macro_rules! binary_platform {
@@ -322,6 +323,7 @@ pub struct VendorDep {
     #[doc = "URL for this. If up to date, the contents of the url should reproduce this [`VendorDep`] value."]
     pub json_url: String,
     #[doc = "A list of other [`VendorDep`]s this is explicitly incompatible with. Generally this includes older versions which would introduce name collisions."]
+    #[serde(default)]
     pub conflicts_with: Vec<PackageSpec>,
     #[doc = "A list of Java source dependencies."]
     pub java_dependencies: Vec<JavaDependency>,
