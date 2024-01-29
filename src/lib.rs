@@ -35,6 +35,38 @@ pub struct JavaDependency {
     pub version: String,
 }
 
+impl JavaDependency {
+    #[doc = "Resolve Maven URL."]
+    pub fn get_url(&self, maven_url: &str) -> String {
+        format!(
+            "{0}{1}/{2}/{3}/{4}",
+            maven_url,
+            self.group_id.replace('.', "/"),
+            self.artifact_id,
+            self.version,
+            self.file_name()
+        )
+    }
+
+    #[doc = "Get name of jar file."]
+    pub fn file_name(&self) -> String {
+        format!("{}-{}.jar", self.artifact_id, self.version)
+    }
+
+    #[doc = "Download Maven artifact and save it in a directory."]
+    pub async fn download_library_to_folder<P: AsRef<Path>>(
+        &self,
+        out_folder: P,
+        maven_url: &str,
+    ) -> Result<()> {
+        let url = self.get_url(maven_url);
+        let res = reqwest::get(url).await?.bytes().await?.to_vec();
+        _ = std::fs::create_dir_all(out_folder.as_ref());
+        std::fs::write(out_folder.as_ref().join(self.file_name()), res)?;
+        Ok(())
+    }
+}
+
 #[doc = "A native dependency required for Java."]
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -235,7 +267,11 @@ impl CppInfo {
 
     #[doc = "Get `LD_LIBRARY_PATH` environment variable for runtime linking."]
     pub fn ld_library_path(&self) -> String {
-        self.library_search_paths.iter().map(|x| format!("{}", x.display())).collect::<Vec<_>>().join(":")
+        self.library_search_paths
+            .iter()
+            .map(|x| format!("{}", x.display()))
+            .collect::<Vec<_>>()
+            .join(":")
     }
 
     #[doc = "Get command line arguments passed to either `gcc` or `clang` for include directories."]
@@ -300,6 +336,7 @@ impl VendorDep {
         Ok(reqwest::get(url).await?.json::<Self>().await?)
     }
 
+    #[doc = "Download all cpp dependencies. Directory structure follows `<output_folder>/<cpp_dependency_name>/(lib|include)`."]
     pub async fn download_all_cpp_deps_to_folder<P: AsRef<Path>>(
         &self,
         p: P,
@@ -378,6 +415,42 @@ impl VendorDep {
             libraries,
         })
     }
+
+    #[doc = "Download all java dependencies. Note this does *not* include JNI dependencies. Directory structure follows `<output_folder>/<java_dependency_name>-<java_dependency_version>.jar`."]
+    pub async fn download_all_java_deps_to_folder<P: AsRef<Path>>(
+        &self,
+        p: P,
+    ) -> Result<Vec<PathBuf>> {
+        let path = p.as_ref();
+        for dep in &self.java_dependencies {
+            'outer: loop {
+                for maven_url in &self.maven_urls {
+                    match dep.download_library_to_folder(path, maven_url).await {
+                        Ok(_) => break 'outer,
+                        _ => {}
+                    };
+                }
+                return Err(crate::error::Error::NotFoundError(format!(
+                    "{}:{}:{}",
+                    dep.group_id, dep.artifact_id, dep.version
+                )));
+            }
+        }
+
+        Ok(std::fs::read_dir(path)?
+            .into_iter()
+            .filter_map(|x| x.ok())
+            .filter_map(|x| {
+                if x.file_type().ok()?.is_file() {
+                    Some(x.path())
+                } else {
+                    None
+                }
+            })
+            .collect())
+    }
+
+    // TODO JNI dependencies
 }
 
 macro_rules! wpi_cpp_dep {
@@ -402,8 +475,12 @@ pub fn wpilib_as_a_vendordep() -> VendorDep {
         maven_urls: vec!["https://frcmaven.wpi.edu/artifactory/release/".to_string()],
         json_url: "".to_string(),
         conflicts_with: vec![],
-        java_dependencies: vec![],
-        jni_dependencies: vec![],
+        java_dependencies: vec![
+            // TODO
+        ],
+        jni_dependencies: vec![
+            // TODO
+        ],
         cpp_dependencies: vec![
             wpi_cpp_dep!(hal),
             wpi_cpp_dep!(ntcore),
