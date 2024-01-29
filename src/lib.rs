@@ -313,6 +313,7 @@ pub struct VendorDep {
     #[doc = "Vendor library version. Usually is the same as each artifact's Maven version."]
     pub version: String,
     #[doc = "Supported year."]
+    #[serde(deserialize_with = "__private::deserialize_string_or_u32_for_u32")]
     pub frc_year: u32,
     #[doc = "UUID used for checking compatibility."]
     pub uuid: String,
@@ -489,6 +490,31 @@ pub fn wpilib_as_a_vendordep() -> VendorDep {
             wpi_cpp_dep!(wpiutil),
             wpi_cpp_dep!(wpilibc),
         ],
+    }
+}
+
+#[doc(hidden)]
+mod __private {
+    use serde::{Deserialize, Deserializer};
+
+    pub fn deserialize_string_or_u32_for_u32<'de, D>(deserializer: D) -> Result<u32, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(serde::Deserialize)]
+        #[serde(untagged)]
+        enum Inner {
+            Int(u32),
+            String(String),
+        }
+
+        let res = Inner::deserialize(deserializer)?;
+        match res {
+            Inner::Int(x) => Ok(x),
+            Inner::String(x) => x
+                .parse()
+                .map_err(|x| <D::Error as serde::de::Error>::custom(x)),
+        }
     }
 }
 
