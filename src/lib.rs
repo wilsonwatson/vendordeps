@@ -88,6 +88,54 @@ pub struct JniDependency {
     pub sim_mode: Option<String>,
 }
 
+impl JniDependency {
+    #[doc = "Resolve Maven URL."]
+    pub fn get_url(
+        &self,
+        maven_url: &str,
+        platform: &str,
+        is_debug: bool,
+    ) -> String {
+        format!(
+            "{0}{1}/{2}/{3}/{2}-{3}-{4}{5}.{6}",
+            maven_url,
+            self.group_id.replace('.', "/"),
+            self.artifact_id,
+            self.version,
+            platform,
+            if is_debug { "debug" } else { "" },
+            if self.is_jar { "jar" } else { "zip" },
+        )
+    }
+
+    #[doc = "Download Maven artifact and unzip it to a directory."]
+    pub async fn download_library_to_folder<P: AsRef<Path>>(
+        &self,
+        out_folder: P,
+        maven_url: &str,
+        platform: BinaryPlatform,
+        is_debug: bool,
+    ) -> Result<()> {
+        let url = self.get_url(maven_url, platform.to_str(), is_debug);
+        let res = std::io::Cursor::new(reqwest::get(url).await?.bytes().await?.to_vec());
+        let mut zip = zip::ZipArchive::new(res)?;
+        for i in 0..zip.len() {
+            let mut f = zip.by_index(i)?;
+            if f.name().ends_with("/") {
+                continue;
+            }
+            let outpath = out_folder.as_ref().join(
+                f.enclosed_name()
+                    .ok_or_else(|| error::Error::ZipSecurityError)?,
+            );
+            _ = std::fs::create_dir_all(outpath.parent().unwrap());
+            let mut outf = std::fs::File::create(outpath)?;
+            std::io::copy(&mut f, &mut outf)?;
+        }
+        Ok(())
+    }
+}
+
 macro_rules! binary_platform {
     ($name:ident {$($variant:ident = $val:literal),* $(,)?}) => {
         #[doc = "Valid platforms for WPILib execution."]
@@ -414,6 +462,65 @@ impl VendorDep {
         }
         Ok(CppInfo {
             include_dirs,
+            library_search_paths,
+            libraries,
+        })
+    }
+
+    #[doc = "Download all JNI dependencies. Directory structure follows `<output_folder>/<cpp_dependency_name>/`."]
+    pub async fn download_all_jni_deps_to_folder<P: AsRef<Path>>(
+        &self,
+        p: P,
+        binary_platform: BinaryPlatform,
+        is_debug: bool,
+    ) -> Result<CppInfo> {
+        let path = p.as_ref();
+        let mut library_search_paths = Vec::new();
+        let mut libraries = Vec::new();
+        for dep in &self.jni_dependencies {
+            let dep_path = path.join(&dep.artifact_id);
+            'outer: loop {
+                for maven_url in &self.maven_urls {
+                    match dep
+                        .download_library_to_folder(
+                            &dep_path,
+                            maven_url.as_str(),
+                            binary_platform,
+                            is_debug,
+                        )
+                        .await
+                    {
+                        Ok(_) => break 'outer,
+                        _ => {}
+                    }
+                }
+                return Err(crate::error::Error::NotFoundError(format!(
+                    "{}:{}:{}",
+                    dep.group_id, dep.artifact_id, dep.version
+                )));
+            }
+            let mut temp_search_paths = HashSet::new();
+            for item in jwalk::WalkDir::new(dep_path) {
+                let item = item?;
+                if let Some(stem) = item.path().file_stem() {
+                    let stem = stem.to_string_lossy();
+                    match item.path().extension().and_then(|x| x.to_str()) {
+                        Some("so") => {
+                            temp_search_paths.insert(item.parent_path().to_path_buf());
+                            libraries.push(stem[3..].to_string());
+                        }
+                        Some("dll") => {
+                            temp_search_paths.insert(item.parent_path().to_path_buf());
+                            libraries.push(stem.to_string());
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            library_search_paths.extend(temp_search_paths);
+        }
+        Ok(CppInfo {
+            include_dirs: vec![],
             library_search_paths,
             libraries,
         })
