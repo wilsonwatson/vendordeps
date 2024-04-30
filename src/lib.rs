@@ -8,6 +8,8 @@ use std::{
 
 use serde::Deserialize;
 
+const WPILIB_LATEST_VERSION: &'static str = "2024.3.2";
+
 pub mod error;
 pub use error::Result;
 
@@ -559,47 +561,6 @@ impl VendorDep {
             })
             .collect())
     }
-
-    // TODO JNI dependencies
-}
-
-macro_rules! wpi_cpp_dep {
-    ($name:ident) => {
-        CppDependency {
-            group_id: concat!("edu.wpi.first.", stringify!($name)).to_string(),
-            artifact_id: concat!(stringify!($name), "-cpp").to_string(),
-            version: "2024.2.1".to_string(),
-            header_classifier: "headers".to_string(),
-        }
-    };
-}
-
-#[doc = "Create a [`VendorDep`] that includes all C++ libraries that come with WPILib."]
-pub fn wpilib_as_a_vendordep() -> VendorDep {
-    VendorDep {
-        file_name: "".to_string(),
-        name: "".to_string(),
-        version: "".to_string(),
-        frc_year: 2024,
-        uuid: "".to_string(),
-        maven_urls: vec!["https://frcmaven.wpi.edu/artifactory/release/".to_string()],
-        json_url: "".to_string(),
-        conflicts_with: vec![],
-        java_dependencies: vec![
-            // TODO
-        ],
-        jni_dependencies: vec![
-            // TODO
-        ],
-        cpp_dependencies: vec![
-            wpi_cpp_dep!(hal),
-            wpi_cpp_dep!(ntcore),
-            wpi_cpp_dep!(wpimath),
-            wpi_cpp_dep!(wpinet),
-            wpi_cpp_dep!(wpiutil),
-            wpi_cpp_dep!(wpilibc),
-        ],
-    }
 }
 
 #[doc(hidden)]
@@ -650,3 +611,5 @@ mod test {
             })
     }
 }
+
+include!("wpilib.rs");

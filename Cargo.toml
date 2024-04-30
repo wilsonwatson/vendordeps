@@ -14,3 +14,8 @@ jwalk = "0.8"
 [dev-dependencies]
 tokio = { version = "1", features = ["rt"] }
 tempfile = "3.9"
+
+[workspace]
+
+resolver = "2"
+members = ["wpilib-index"]
