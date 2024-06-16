@@ -1,5 +1,5 @@
-#![warn(rustdoc::missing_crate_level_docs)]
-#![doc = "Parse and Download artifacts from the [Vendordep JSON format](https://docs.wpilib.org/en/stable/docs/software/vscode-overview/3rd-party-libraries.html#what-are-vendor-dependencies)."]
+#![deny(rustdoc::missing_crate_level_docs)]
+#![doc = include_str!("../README.md")]
 
 use std::{
     collections::HashSet,
@@ -8,7 +8,7 @@ use std::{
 
 use serde::Deserialize;
 
-const WPILIB_LATEST_VERSION: &'static str = "2024.3.2";
+pub const WPILIB_LATEST_VERSION: &'static str = "2024.3.2";
 
 pub mod error;
 pub use error::Result;
