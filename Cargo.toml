@@ -3,7 +3,7 @@ name = "vendordeps"
 description = "Download artifacts using the WPILib vendordep format."
 repository = "https://github.com/wilsonwatson/vendordeps"
 readme = "README.md"
-version = "0.2.0"
+version = "0.2.1"
 documentation = "https://docs.rs/vendordeps/latest/vendordeps/"
 edition = "2021"
 license = "MIT"
@@ -14,7 +14,7 @@ exclude = ["wpilib-index/*"]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 reqwest = { version = "0.12", features = ["json"] }
-zip = { version = "2", default-features = false }
+zip = { version = "2", default-features = false, features = ["deflate", "deflate64"] }
 thiserror = "1.0"
 jwalk = "0.8"
 
