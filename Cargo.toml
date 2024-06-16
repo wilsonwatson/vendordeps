@@ -1,7 +1,11 @@
 [package]
 name = "vendordeps"
+description = "Download artifacts using the WPILib vendordep format."
+repository = "https://github.com/wilsonwatson/vendordeps"
+readme = "README.md"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
