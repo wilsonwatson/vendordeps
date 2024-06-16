@@ -92,12 +92,7 @@ pub struct JniDependency {
 
 impl JniDependency {
     #[doc = "Resolve Maven URL."]
-    pub fn get_url(
-        &self,
-        maven_url: &str,
-        platform: &str,
-        is_debug: bool,
-    ) -> String {
+    pub fn get_url(&self, maven_url: &str, platform: &str, is_debug: bool) -> String {
         format!(
             "{0}{1}/{2}/{3}/{2}-{3}-{4}{5}.{6}",
             maven_url,
@@ -396,6 +391,7 @@ impl VendorDep {
         binary_platform: BinaryPlatform,
         is_static: bool,
         is_debug: bool,
+        skip_failed_packages: bool,
     ) -> Result<CppInfo> {
         let path = p.as_ref();
         let mut include_dirs = Vec::new();
@@ -414,10 +410,12 @@ impl VendorDep {
                         _ => {}
                     }
                 }
-                return Err(crate::error::Error::NotFoundError(format!(
-                    "{}:{}:{}",
-                    dep.group_id, dep.artifact_id, dep.version
-                )));
+                if !skip_failed_packages {
+                    return Err(crate::error::Error::NotFoundError(format!(
+                        "{}:{}:{}",
+                        dep.group_id, dep.artifact_id, dep.version
+                    )));
+                }
             }
             include_dirs.push(header_path);
             let libs_path = dep_path.join("libs");
@@ -437,10 +435,12 @@ impl VendorDep {
                         _ => {}
                     }
                 }
-                return Err(crate::error::Error::NotFoundError(format!(
-                    "{}:{}:{}",
-                    dep.group_id, dep.artifact_id, dep.version
-                )));
+                if !skip_failed_packages {
+                    return Err(crate::error::Error::NotFoundError(format!(
+                        "{}:{}:{}",
+                        dep.group_id, dep.artifact_id, dep.version
+                    )));
+                }
             }
             let mut temp_search_paths = HashSet::new();
             for item in jwalk::WalkDir::new(libs_path) {
@@ -475,6 +475,7 @@ impl VendorDep {
         p: P,
         binary_platform: BinaryPlatform,
         is_debug: bool,
+        skip_failed_packages: bool,
     ) -> Result<CppInfo> {
         let path = p.as_ref();
         let mut library_search_paths = Vec::new();
@@ -496,10 +497,12 @@ impl VendorDep {
                         _ => {}
                     }
                 }
-                return Err(crate::error::Error::NotFoundError(format!(
-                    "{}:{}:{}",
-                    dep.group_id, dep.artifact_id, dep.version
-                )));
+                if !skip_failed_packages {
+                    return Err(crate::error::Error::NotFoundError(format!(
+                        "{}:{}:{}",
+                        dep.group_id, dep.artifact_id, dep.version
+                    )));
+                }
             }
             let mut temp_search_paths = HashSet::new();
             for item in jwalk::WalkDir::new(dep_path) {
@@ -532,6 +535,7 @@ impl VendorDep {
     pub async fn download_all_java_deps_to_folder<P: AsRef<Path>>(
         &self,
         p: P,
+        skip_failed_packages: bool,
     ) -> Result<Vec<PathBuf>> {
         let path = p.as_ref();
         for dep in &self.java_dependencies {
@@ -542,10 +546,12 @@ impl VendorDep {
                         _ => {}
                     };
                 }
-                return Err(crate::error::Error::NotFoundError(format!(
-                    "{}:{}:{}",
-                    dep.group_id, dep.artifact_id, dep.version
-                )));
+                if !skip_failed_packages {
+                    return Err(crate::error::Error::NotFoundError(format!(
+                        "{}:{}:{}",
+                        dep.group_id, dep.artifact_id, dep.version
+                    )));
+                }
             }
         }
 

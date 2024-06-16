@@ -3,13 +3,11 @@ name = "wpilib-index"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-reqwest = { version = "0.11", features = ["json"] }
-zip = "0.6"
+reqwest = { version = "0.12", features = ["json"] }
+zip = { version = "2", default-features = false }
 thiserror = "1.0"
 jwalk = "0.8"
 scraper = "0.19"
