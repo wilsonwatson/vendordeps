@@ -8,7 +8,10 @@ use std::{
 
 use serde::Deserialize;
 
+#[doc = "Latest release version of WPILib."]
 pub const WPILIB_LATEST_VERSION: &'static str = "2024.3.2";
+#[doc = "Maven repository for WPILib releases."]
+pub const WPILIB_RELEASE_MAVEN_REPO: &'static str = "https://frcmaven.wpi.edu/artifactory/release/";
 
 pub mod error;
 pub use error::Result;

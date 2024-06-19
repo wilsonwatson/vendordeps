@@ -1,6 +1,6 @@
 use std::{collections::{HashMap, HashSet}, io::Write, sync::Arc};
 
-use proc_macro2::{Ident, Literal, Span, TokenStream};
+use proc_macro2::{Literal, TokenStream};
 use reqwest::Client;
 use serde::Deserialize;
 use tokio::sync::Mutex;
@@ -124,7 +124,7 @@ async fn main() {
             JniDependency {
                 group_id: #group_id.to_string(),
                 artifact_id: #artifact_id.to_string(),
-                version: WPILIB_LATEST_VERSION.to_string(),
+                version: crate::WPILIB_LATEST_VERSION.to_string(),
                 is_jar: true,
                 sim_mode: None,
                 skip_invalid_platforms: false,
@@ -139,7 +139,7 @@ async fn main() {
             CppDependency {
                 group_id: #group_id.to_string(),
                 artifact_id: #artifact_id.to_string(),
-                version: WPILIB_LATEST_VERSION.to_string(),
+                version: crate::WPILIB_LATEST_VERSION.to_string(),
                 header_classifier: "headers".to_string(),
             },
         }.into_iter()
@@ -151,7 +151,7 @@ async fn main() {
             JavaDependency {
                 group_id: #group_id.to_string(),
                 artifact_id: #artifact_id.to_string(),
-                version: WPILIB_LATEST_VERSION.to_string(),
+                version: crate::WPILIB_LATEST_VERSION.to_string(),
             },
         }.into_iter()
     }).flatten().collect();
@@ -162,10 +162,10 @@ async fn main() {
                 VendorDep {
                     file_name: "".to_string(),
                     name: "".to_string(),
-                    version: "".to_string(),
+                    version: crate::WPILIB_LATEST_VERSION.to_string(),
                     frc_year: 2024,
                     uuid: "".to_string(),
-                    maven_urls: vec!["https://frcmaven.wpi.edu/artifactory/release/".to_string()],
+                    maven_urls: vec![crate::WPILIB_RELEASE_MAVEN_REPO.to_string()],
                     json_url: "".to_string(),
                     conflicts_with: vec![],
                     java_dependencies: vec![
