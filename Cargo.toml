@@ -10,13 +10,18 @@ license = "MIT"
 
 exclude = ["wpilib-index/*"]
 
+[features]
+
+default = []
+download = ["dep:reqwest", "dep:zip", "dep:jwalk", "dep:thiserror"]
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-reqwest = { version = "0.12", features = ["json"] }
-zip = { version = "2", default-features = false, features = ["deflate", "deflate64"] }
-thiserror = "1.0"
-jwalk = "0.8"
+reqwest = { version = "0.12", features = ["json"], optional = true }
+zip = { version = "2", default-features = false, features = ["deflate", "deflate64"], optional = true }
+thiserror = { version = "1.0", optional = true }
+jwalk = { version = "0.8", optional = true }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["rt"] }
