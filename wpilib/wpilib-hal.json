@@ -1,0 +1,54 @@
+{
+  "fileName": "wpilib-hal.json",
+  "name": "hal",
+  "version": "2024.3.2",
+  "frcYear": 2024,
+  "uuid": "904c5839-4492-4078-94cf-f95659de1262",
+  "mavenUrls": [
+    "https://frcmaven.wpi.edu/artifactory/release/"
+  ],
+  "jsonUrl": "https://raw.githubusercontent.com/wilsonwatson/vendordeps/main/wpilib/wpilib-hal.json",
+  "conflictsWith": [],
+  "javaDependencies": [
+    {
+      "groupId": "edu.wpi.first.hal",
+      "artifactId": "hal-java",
+      "version": "2024.3.2"
+    }
+  ],
+  "jniDependencies": [
+    {
+      "groupId": "edu.wpi.first.hal",
+      "artifactId": "hal-jni",
+      "version": "2024.3.2",
+      "isJar": true,
+      "skipInvalidPlatforms": true,
+      "validPlatforms": [
+        "linuxarm32",
+        "linuxarm64",
+        "linuxathena",
+        "linuxx86-64",
+        "osxuniversal",
+        "windowsarm64",
+        "windowsx86-64"
+      ]
+    }
+  ],
+  "cppDependencies": [
+    {
+      "groupId": "edu.wpi.first.hal",
+      "artifactId": "hal-cpp",
+      "version": "2024.3.2",
+      "headerClassifier": "headers",
+      "binaryPlatforms": [
+        "linuxarm32",
+        "linuxarm64",
+        "linuxathena",
+        "linuxx86-64",
+        "osxuniversal",
+        "windowsarm64",
+        "windowsx86-64"
+      ]
+    }
+  ]
+}

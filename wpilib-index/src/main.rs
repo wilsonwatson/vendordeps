@@ -1,228 +1,209 @@
-use std::{collections::{HashMap, HashSet}, io::Write, sync::Arc};
+use std::path::Path;
 
-use proc_macro2::{Literal, TokenStream};
 use reqwest::Client;
 use serde::Deserialize;
-use tokio::sync::Mutex;
+use vendordeps::{CppDependency, JavaDependency, JniDependency};
 
 const LATEST_VERSION: &'static str = "2024.3.2";
+const YEAR: u32 = 2024;
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize, Debug)]
 struct FolderItem {
     name: String,
     folder: bool,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize, Debug)]
 struct Folder {
-    path: String,
     data: Vec<FolderItem>,
 }
 
-#[derive(Debug, Default)]
-struct State {
-    jni: JNIState,
-    cpp: CppState,
-    java: JavaState,
-}
-
-#[derive(Debug, Default)]
-struct JNIState {
-    items: HashMap<(String, String), HashSet<BinaryPlatform>>
-}
-
-#[derive(Debug, Default)]
-struct CppState {
-    items: HashMap<(String, String), HashSet<BinaryPlatform>>
-}
-
-#[derive(Debug, Default)]
-struct JavaState {
-    items: HashSet<(String, String)>
-}
-
-async fn index_artifactory(client: &Client, link: &str, state: Arc<Mutex<State>>) {
-    let index = client.get(link).send().await.unwrap();
-    if !index.headers().get("Content-Type").and_then(|x| x.to_str().ok()).map(|x| x.starts_with("application/json")).unwrap_or(false) {
-        return;
-    }
-    let index: Folder = index.json().await.unwrap();
-    let jni_end = format!("-jni/{}", LATEST_VERSION);
-    let java_end = format!("-java/{}", LATEST_VERSION);
-    let cpp_end = format!("-cpp/{}", LATEST_VERSION);
-    for item in index.data {
-        if item.folder {
-            if item.name.starts_with("20") && LATEST_VERSION != item.name {
-                continue
-            }
-            if item.name == "tools" || item.name == "shuffleboard" || item.name.starts_with("javafx") || item.name.starts_with("xrp") || item.name.starts_with("romi") {
-                continue
-            }
-            let next = format!("{}{}/?{}", link.split('?').next().unwrap(), item.name, link.split('?').last().unwrap());
-            let state = state.clone();
-            Box::pin(async move { index_artifactory(client, &next, state).await }).await;
-        } else {
-            if index.path.ends_with(&jni_end) {
-                let name = item.name;
-                let parts = index.path.split('/').collect::<Vec<_>>();
-                let (_, rest) = parts.split_last().unwrap();
-                let (item, group) = rest.split_last().unwrap();
-                let group = group.join(".");
-                let ty = name[item.len() + LATEST_VERSION.len() + 2..].split('.').next().unwrap();
-                match BinaryPlatform::from_str(ty) {
-                    Some(BinaryPlatform::Headers) => {},
-                    Some(x) => {
-                        let mut state = state.lock().await;
-                        let entry = state.jni.items.entry((group, item.to_string())).or_default();
-                        entry.insert(x);
+async fn index_artifactory(client: &Client, base: &str, link: &str) {
+    let wpilib_dir = Path::new("wpilib");
+    _ = std::fs::create_dir_all(wpilib_dir);
+    let folder: Folder = client
+        .get(&format!("{}/{}/?recordNum=0", base, link))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    for item in folder.data {
+        if !item.folder {
+            continue;
+        }
+        let name = item.name;
+        let folder: Folder = client
+            .get(&format!("{}/{}/{}/?recordNum=0", base, link, &name))
+            .send()
+            .await
+            .unwrap()
+            .json()
+            .await
+            .unwrap();
+        let mut jni: Vec<(String, Vec<String>)> = Vec::new();
+        let mut java: Vec<String> = Vec::new();
+        let mut cpp: Vec<(String, Vec<String>)> = Vec::new();
+        for item in folder.data {
+            let artifact_id = item.name.as_str();
+            if artifact_id == format!("{}-cpp", &name) {
+                let mut support = Vec::new();
+                let folder: Folder = client
+                    .get(&format!(
+                        "{}/{}/{}/{}/?recordNum=0",
+                        base, link, &name, artifact_id
+                    ))
+                    .send()
+                    .await
+                    .unwrap()
+                    .json()
+                    .await
+                    .unwrap();
+                for item in folder.data {
+                    let version = item.name.as_str();
+                    if item.name == LATEST_VERSION {
+                        let folder: Folder = client
+                            .get(&format!(
+                                "{}/{}/{}/{}/{}/?recordNum=0",
+                                base, link, &name, artifact_id, version
+                            ))
+                            .send()
+                            .await
+                            .unwrap()
+                            .json()
+                            .await
+                            .unwrap();
+                        let expected_start = format!("{}-{}-", artifact_id, version);
+                        for item in folder.data {
+                            let zipname = item.name.as_str();
+                            if zipname.ends_with("debug.zip")
+                                || zipname.ends_with("debug.jar")
+                                || zipname.ends_with("static.zip")
+                                || zipname.ends_with("static.jar")
+                                || zipname.ends_with("staticdebug.zip")
+                                || zipname.ends_with("staticdebug.jar")
+                                || zipname.ends_with("sources.zip")
+                                || zipname.ends_with("sources.jar")
+                                || zipname.ends_with("headers.zip")
+                                || zipname.ends_with("headers.jar")
+                            {
+                                continue;
+                            }
+                            if zipname.starts_with(&expected_start) {
+                                let ending = &zipname[expected_start.len()..zipname.len() - 4];
+                                support.push(ending.to_string());
+                            }
+                        }
                     }
-                    None => {},
                 }
-            } else if index.path.ends_with(&java_end) {
-                let name = item.name;
-                let parts = index.path.split('/').collect::<Vec<_>>();
-                let (_, rest) = parts.split_last().unwrap();
-                let (item, group) = rest.split_last().unwrap();
-                let group = group.join(".");
-                let ty = &name[item.len() + LATEST_VERSION.len() + 2..];
-                if ty == "jar" {
-                    let mut state = state.lock().await;
-                        state.java.items.insert((group, item.to_string()));
+                if !support.is_empty() {
+                    cpp.push((artifact_id.to_string(), support));
                 }
-            } else if index.path.ends_with(&cpp_end) {
-                let name = item.name;
-                let parts = index.path.split('/').collect::<Vec<_>>();
-                let (_, rest) = parts.split_last().unwrap();
-                let (item, group) = rest.split_last().unwrap();
-                let group = group.join(".");
-                let ty = name[item.len() + LATEST_VERSION.len() + 2..].split('.').next().unwrap();
-                match BinaryPlatform::from_str(ty) {
-                    Some(BinaryPlatform::Headers) => {},
-                    Some(x) => {
-                        let mut state = state.lock().await;
-                        let entry = state.cpp.items.entry((group, item.to_string())).or_default();
-                        entry.insert(x);
+            } else if item.name == format!("{}-java", &name) {
+                java.push(artifact_id.to_string());
+            } else if item.name == format!("{}-jni", &name) {
+                let mut support = Vec::new();
+                let folder: Folder = client
+                    .get(&format!(
+                        "{}/{}/{}/{}/?recordNum=0",
+                        base, link, &name, artifact_id
+                    ))
+                    .send()
+                    .await
+                    .unwrap()
+                    .json()
+                    .await
+                    .unwrap();
+                for item in folder.data {
+                    let version = item.name.as_str();
+                    if item.name == LATEST_VERSION {
+                        let folder: Folder = client
+                            .get(&format!(
+                                "{}/{}/{}/{}/{}/?recordNum=0",
+                                base, link, &name, artifact_id, version
+                            ))
+                            .send()
+                            .await
+                            .unwrap()
+                            .json()
+                            .await
+                            .unwrap();
+                        let expected_start = format!("{}-{}-", artifact_id, version);
+                        for item in folder.data {
+                            let zipname = item.name.as_str();
+                            if zipname.ends_with("debug.zip")
+                                || zipname.ends_with("debug.jar")
+                                || zipname.ends_with("static.zip")
+                                || zipname.ends_with("static.jar")
+                                || zipname.ends_with("staticdebug.zip")
+                                || zipname.ends_with("staticdebug.jar")
+                                || zipname.ends_with("sources.zip")
+                                || zipname.ends_with("sources.jar")
+                                || zipname.ends_with("headers.zip")
+                                || zipname.ends_with("headers.jar")
+                            {
+                                continue;
+                            }
+                            if zipname.starts_with(&expected_start) {
+                                let ending = &zipname[expected_start.len()..zipname.len() - 4];
+                                support.push(ending.to_string());
+                            }
+                        }
                     }
-                    None => {},
+                }
+                if !support.is_empty() {
+                    jni.push((artifact_id.to_string(), support));
                 }
             }
         }
+        if cpp.is_empty() && java.is_empty() && jni.is_empty() {
+            continue
+        }
+        let file_name = format!("wpilib-{}.json", name);
+        let vendordep = vendordeps::VendorDep {
+            file_name: file_name.clone(),
+            version: LATEST_VERSION.to_string(),
+            uuid: uuid::Uuid::new_v4().to_string(),
+            name: name.to_string(),
+            frc_year: YEAR,
+            maven_urls: vec!["https://frcmaven.wpi.edu/artifactory/release/".to_string()],
+            json_url: format!("https://raw.githubusercontent.com/wilsonwatson/vendordeps/main/wpilib/{}", file_name),
+            conflicts_with: vec![],
+            java_dependencies: java.into_iter().map(|x| JavaDependency {
+                group_id: format!("edu.wpi.first.{}", name),
+                artifact_id: x,
+                version: LATEST_VERSION.to_string(),
+            }).collect(),
+            cpp_dependencies: cpp.into_iter().map(|(x, d)| CppDependency {
+                group_id: format!("edu.wpi.first.{}", name),
+                artifact_id: x,
+                version: LATEST_VERSION.to_string(),
+                header_classifier: "headers".to_string(),
+                binary_platforms: d
+            }).collect(),
+            jni_dependencies: jni.into_iter().map(|(x, d)| JniDependency {
+                group_id: format!("edu.wpi.first.{}", name),
+                artifact_id: x,
+                version: LATEST_VERSION.to_string(),
+                is_jar: true, /* TODO: detect this */
+                skip_invalid_platforms: true,
+                valid_platforms: d,
+                sim_mode: None,
+            }).collect(),
+        };
+        let vendordep = serde_json::to_string_pretty(&vendordep).unwrap();
+        std::fs::write(wpilib_dir.join(file_name), vendordep).unwrap();
     }
 }
 
 #[tokio::main]
 async fn main() {
     let client = Client::new();
-    let state = Arc::new(Mutex::new(State::default()));
-    index_artifactory(&client, "https://frcmaven.wpi.edu/ui/api/v1/ui/v2/nativeBrowser/release/?recordNum=0", state.clone()).await;
-    let state = state.lock().await;
-    let state = &*state;
-    let jni: TokenStream = state.jni.items.iter().map(|((group, item), _platforms)| {
-        let group_id = Literal::string(group);
-        let artifact_id = Literal::string(item);
-        quote::quote! {
-            JniDependency {
-                group_id: #group_id.to_string(),
-                artifact_id: #artifact_id.to_string(),
-                version: crate::WPILIB_LATEST_VERSION.to_string(),
-                is_jar: true,
-                sim_mode: None,
-                skip_invalid_platforms: false,
-                valid_platforms: vec![],
-            },
-        }.into_iter()
-    }).flatten().collect();
-    let cpp: TokenStream = state.cpp.items.iter().map(|((group, item), _platforms)| {
-        let group_id = Literal::string(group);
-        let artifact_id = Literal::string(item);
-        quote::quote! {
-            CppDependency {
-                group_id: #group_id.to_string(),
-                artifact_id: #artifact_id.to_string(),
-                version: crate::WPILIB_LATEST_VERSION.to_string(),
-                header_classifier: "headers".to_string(),
-            },
-        }.into_iter()
-    }).flatten().collect();
-    let java: TokenStream = state.java.items.iter().map(|(group, item)| {
-        let group_id = Literal::string(group);
-        let artifact_id = Literal::string(item);
-        quote::quote! {
-            JavaDependency {
-                group_id: #group_id.to_string(),
-                artifact_id: #artifact_id.to_string(),
-                version: crate::WPILIB_LATEST_VERSION.to_string(),
-            },
-        }.into_iter()
-    }).flatten().collect();
-    let mut f = std::fs::File::create("src/wpilib.rs").unwrap();
-    writeln!(&mut f, "{}", quote::quote! {
-        #[doc = "Create a [`VendorDep`] that includes all libraries that come with WPILib."]
-            pub fn wpilib_as_a_vendordep() -> VendorDep {
-                VendorDep {
-                    file_name: "".to_string(),
-                    name: "".to_string(),
-                    version: crate::WPILIB_LATEST_VERSION.to_string(),
-                    frc_year: 2024,
-                    uuid: "".to_string(),
-                    maven_urls: vec![crate::WPILIB_RELEASE_MAVEN_REPO.to_string()],
-                    json_url: "".to_string(),
-                    conflicts_with: vec![],
-                    java_dependencies: vec![
-                        #java
-                    ],
-                    jni_dependencies: vec![
-                        #jni
-                    ],
-                    cpp_dependencies: vec![
-                        #cpp
-                    ],
-                }
-            }
-    }).unwrap();
-    drop(f);
-    std::process::Command::new("rustfmt").arg("src/wpilib.rs").spawn().unwrap().wait().unwrap();
+    index_artifactory(
+        &client,
+        "https://frcmaven.wpi.edu/ui/api/v1/ui/v2/nativeBrowser/release",
+        "edu/wpi/first",
+    )
+    .await;
 }
-
-macro_rules! binary_platform {
-    ($name:ident {$($variant:ident = $val:literal),* $(,)?}) => {
-        #[doc = "Valid platforms for WPILib execution."]
-        #[derive(Debug, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
-        pub enum $name {
-            $(
-                #[serde(rename = $val)]
-                $variant,
-            )*
-        }
-
-        impl $name {
-            pub fn to_str(&self) -> &'static str {
-                match self {
-                    $(
-                        Self::$variant => $val,
-                    )*
-                }
-            }
-
-            pub fn from_str(input: &str) -> Option<Self> {
-                match input {
-                    $(
-                        $val => Some(Self::$variant),
-                    )*
-                    _ => None
-                }
-            }
-        }
-    };
-}
-
-binary_platform!(BinaryPlatform {
-    LinuxArm32 = "linuxarm32",
-    LinuxArm64 = "linuxarm64",
-    LinuxAthena = "linuxathena",
-    LinuxX86_64 = "linuxx86-64",
-    OsxUniversal = "osxuniversal",
-    WindowsArm64 = "windowsarm64",
-    WindowsX86_64 = "windowsx86-64",
-    Headers = "headers",
-});

@@ -1,0 +1,21 @@
+{
+  "fileName": "wpilib-wpilibj.json",
+  "name": "wpilibj",
+  "version": "2024.3.2",
+  "frcYear": 2024,
+  "uuid": "55d3f0f7-bbc9-4b45-b0b7-42b165800e8d",
+  "mavenUrls": [
+    "https://frcmaven.wpi.edu/artifactory/release/"
+  ],
+  "jsonUrl": "https://raw.githubusercontent.com/wilsonwatson/vendordeps/main/wpilib/wpilib-wpilibj.json",
+  "conflictsWith": [],
+  "javaDependencies": [
+    {
+      "groupId": "edu.wpi.first.wpilibj",
+      "artifactId": "wpilibj-java",
+      "version": "2024.3.2"
+    }
+  ],
+  "jniDependencies": [],
+  "cppDependencies": []
+}

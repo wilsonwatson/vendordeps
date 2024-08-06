@@ -1,0 +1,32 @@
+{
+  "fileName": "wpilib-ntcoreffi.json",
+  "name": "ntcoreffi",
+  "version": "2024.3.2",
+  "frcYear": 2024,
+  "uuid": "c304e9c9-afd7-4fb0-800f-a587af9dcfbb",
+  "mavenUrls": [
+    "https://frcmaven.wpi.edu/artifactory/release/"
+  ],
+  "jsonUrl": "https://raw.githubusercontent.com/wilsonwatson/vendordeps/main/wpilib/wpilib-ntcoreffi.json",
+  "conflictsWith": [],
+  "javaDependencies": [],
+  "jniDependencies": [],
+  "cppDependencies": [
+    {
+      "groupId": "edu.wpi.first.ntcoreffi",
+      "artifactId": "ntcoreffi-cpp",
+      "version": "2024.3.2",
+      "headerClassifier": "headers",
+      "binaryPlatforms": [
+        "linuxarm32",
+        "linuxarm64",
+        "linuxathena",
+        "linuxx86-64",
+        "osxuniversal",
+        "windowsarm64",
+        "windowsx86-64",
+        "windowsx86"
+      ]
+    }
+  ]
+}

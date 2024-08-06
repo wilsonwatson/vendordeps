@@ -7,7 +7,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 #[doc = "Latest release version of WPILib."]
 pub const WPILIB_LATEST_VERSION: &'static str = "2024.3.2";
@@ -20,7 +20,7 @@ pub mod error;
 pub use error::Result;
 
 #[doc = "A reference to another vendordep."]
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PackageSpec {
     #[doc = "The `uuid` field of the other vendordep."]
@@ -32,7 +32,7 @@ pub struct PackageSpec {
 }
 
 #[doc = "A dependency for Java Compilation."]
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct JavaDependency {
     #[doc = "Maven group."]
@@ -77,7 +77,7 @@ impl JavaDependency {
 }
 
 #[doc = "A native dependency required for Java."]
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct JniDependency {
     #[doc = "Maven group."]
@@ -90,10 +90,9 @@ pub struct JniDependency {
     pub is_jar: bool,
     // Idk what this does
     pub skip_invalid_platforms: bool,
-    // Idk what this does
     pub valid_platforms: Vec<String>,
     // Idk what this does
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub sim_mode: Option<String>,
 }
 
@@ -176,7 +175,7 @@ binary_platform!(BinaryPlatform {
 });
 
 #[doc = "A dependency for C++ compilation."]
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CppDependency {
     #[doc = "Maven group."]
@@ -187,6 +186,9 @@ pub struct CppDependency {
     pub version: String,
     #[doc = "Instead of shipping headers with individual platform artifacts, headers are stored in a separate artifact. This value is used in place of the 'platform' to get the url."]
     pub header_classifier: String,
+    #[doc = "Platforms this library supports. May be empty."]
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub binary_platforms: Vec<String>,
 }
 
 impl CppDependency {
@@ -360,7 +362,7 @@ impl CppInfo {
 }
 
 #[doc = "Vendor Dependency Format."]
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VendorDep {
     #[doc = "File name that GradleRIO will write to `vendordeps/` directory."]
@@ -634,5 +636,3 @@ mod test {
             })
     }
 }
-
-include!("wpilib.rs");

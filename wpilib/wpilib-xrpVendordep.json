@@ -1,0 +1,37 @@
+{
+  "fileName": "wpilib-xrpVendordep.json",
+  "name": "xrpVendordep",
+  "version": "2024.3.2",
+  "frcYear": 2024,
+  "uuid": "1332abf6-f01d-42a3-aa1c-f2d4c48636be",
+  "mavenUrls": [
+    "https://frcmaven.wpi.edu/artifactory/release/"
+  ],
+  "jsonUrl": "https://raw.githubusercontent.com/wilsonwatson/vendordeps/main/wpilib/wpilib-xrpVendordep.json",
+  "conflictsWith": [],
+  "javaDependencies": [
+    {
+      "groupId": "edu.wpi.first.xrpVendordep",
+      "artifactId": "xrpVendordep-java",
+      "version": "2024.3.2"
+    }
+  ],
+  "jniDependencies": [],
+  "cppDependencies": [
+    {
+      "groupId": "edu.wpi.first.xrpVendordep",
+      "artifactId": "xrpVendordep-cpp",
+      "version": "2024.3.2",
+      "headerClassifier": "headers",
+      "binaryPlatforms": [
+        "linuxarm32",
+        "linuxarm64",
+        "linuxathena",
+        "linuxx86-64",
+        "osxuniversal",
+        "windowsarm64",
+        "windowsx86-64"
+      ]
+    }
+  ]
+}

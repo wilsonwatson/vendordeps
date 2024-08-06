@@ -1,0 +1,54 @@
+{
+  "fileName": "wpilib-cscore.json",
+  "name": "cscore",
+  "version": "2024.3.2",
+  "frcYear": 2024,
+  "uuid": "63a2d361-77ef-49fd-82b4-3b59227095bf",
+  "mavenUrls": [
+    "https://frcmaven.wpi.edu/artifactory/release/"
+  ],
+  "jsonUrl": "https://raw.githubusercontent.com/wilsonwatson/vendordeps/main/wpilib/wpilib-cscore.json",
+  "conflictsWith": [],
+  "javaDependencies": [
+    {
+      "groupId": "edu.wpi.first.cscore",
+      "artifactId": "cscore-java",
+      "version": "2024.3.2"
+    }
+  ],
+  "jniDependencies": [
+    {
+      "groupId": "edu.wpi.first.cscore",
+      "artifactId": "cscore-jni",
+      "version": "2024.3.2",
+      "isJar": true,
+      "skipInvalidPlatforms": true,
+      "validPlatforms": [
+        "linuxarm32",
+        "linuxarm64",
+        "linuxathena",
+        "linuxx86-64",
+        "osxuniversal",
+        "windowsarm64",
+        "windowsx86-64"
+      ]
+    }
+  ],
+  "cppDependencies": [
+    {
+      "groupId": "edu.wpi.first.cscore",
+      "artifactId": "cscore-cpp",
+      "version": "2024.3.2",
+      "headerClassifier": "headers",
+      "binaryPlatforms": [
+        "linuxarm32",
+        "linuxarm64",
+        "linuxathena",
+        "linuxx86-64",
+        "osxuniversal",
+        "windowsarm64",
+        "windowsx86-64"
+      ]
+    }
+  ]
+}

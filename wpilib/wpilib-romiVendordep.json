@@ -1,0 +1,37 @@
+{
+  "fileName": "wpilib-romiVendordep.json",
+  "name": "romiVendordep",
+  "version": "2024.3.2",
+  "frcYear": 2024,
+  "uuid": "f14a81f1-babe-427f-9de3-586090a67812",
+  "mavenUrls": [
+    "https://frcmaven.wpi.edu/artifactory/release/"
+  ],
+  "jsonUrl": "https://raw.githubusercontent.com/wilsonwatson/vendordeps/main/wpilib/wpilib-romiVendordep.json",
+  "conflictsWith": [],
+  "javaDependencies": [
+    {
+      "groupId": "edu.wpi.first.romiVendordep",
+      "artifactId": "romiVendordep-java",
+      "version": "2024.3.2"
+    }
+  ],
+  "jniDependencies": [],
+  "cppDependencies": [
+    {
+      "groupId": "edu.wpi.first.romiVendordep",
+      "artifactId": "romiVendordep-cpp",
+      "version": "2024.3.2",
+      "headerClassifier": "headers",
+      "binaryPlatforms": [
+        "linuxarm32",
+        "linuxarm64",
+        "linuxathena",
+        "linuxx86-64",
+        "osxuniversal",
+        "windowsarm64",
+        "windowsx86-64"
+      ]
+    }
+  ]
+}
