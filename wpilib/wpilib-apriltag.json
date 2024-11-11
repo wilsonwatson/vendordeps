@@ -1,9 +1,9 @@
 {
   "fileName": "wpilib-apriltag.json",
   "name": "apriltag",
-  "version": "2024.3.2",
-  "frcYear": 2024,
-  "uuid": "91093677-4284-4916-9a7a-b528850dce3d",
+  "version": "2025.1.1-beta-1",
+  "frcYear": 2025,
+  "uuid": "76219c91-1698-4772-a0e6-d6a7848f4bc5",
   "mavenUrls": [
     "https://frcmaven.wpi.edu/artifactory/release/"
   ],
@@ -13,14 +13,14 @@
     {
       "groupId": "edu.wpi.first.apriltag",
       "artifactId": "apriltag-java",
-      "version": "2024.3.2"
+      "version": "2025.1.1-beta-1"
     }
   ],
   "jniDependencies": [
     {
       "groupId": "edu.wpi.first.apriltag",
       "artifactId": "apriltag-jni",
-      "version": "2024.3.2",
+      "version": "2025.1.1-beta-1",
       "isJar": true,
       "skipInvalidPlatforms": true,
       "validPlatforms": [
@@ -38,7 +38,7 @@
     {
       "groupId": "edu.wpi.first.apriltag",
       "artifactId": "apriltag-cpp",
-      "version": "2024.3.2",
+      "version": "2025.1.1-beta-1",
       "headerClassifier": "headers",
       "binaryPlatforms": [
         "linuxarm32",

@@ -1,9 +1,9 @@
 {
   "fileName": "wpilib-wpimath.json",
   "name": "wpimath",
-  "version": "2024.3.2",
-  "frcYear": 2024,
-  "uuid": "2ab65cdd-9060-476c-ae89-1cc3bf4b99ce",
+  "version": "2025.1.1-beta-1",
+  "frcYear": 2025,
+  "uuid": "df7ece0a-2f67-4652-8103-2bd8975d67fe",
   "mavenUrls": [
     "https://frcmaven.wpi.edu/artifactory/release/"
   ],
@@ -13,14 +13,14 @@
     {
       "groupId": "edu.wpi.first.wpimath",
       "artifactId": "wpimath-java",
-      "version": "2024.3.2"
+      "version": "2025.1.1-beta-1"
     }
   ],
   "jniDependencies": [
     {
       "groupId": "edu.wpi.first.wpimath",
       "artifactId": "wpimath-jni",
-      "version": "2024.3.2",
+      "version": "2025.1.1-beta-1",
       "isJar": true,
       "skipInvalidPlatforms": true,
       "validPlatforms": [
@@ -38,7 +38,7 @@
     {
       "groupId": "edu.wpi.first.wpimath",
       "artifactId": "wpimath-cpp",
-      "version": "2024.3.2",
+      "version": "2025.1.1-beta-1",
       "headerClassifier": "headers",
       "binaryPlatforms": [
         "linuxarm32",

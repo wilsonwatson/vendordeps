@@ -1,9 +1,9 @@
 {
   "fileName": "wpilib-wpinet.json",
   "name": "wpinet",
-  "version": "2024.3.2",
-  "frcYear": 2024,
-  "uuid": "834aa4ef-d7e4-4e35-a627-52bbe9f4cbbf",
+  "version": "2025.1.1-beta-1",
+  "frcYear": 2025,
+  "uuid": "7933e2f8-8f94-40e7-89df-e0ec6217c339",
   "mavenUrls": [
     "https://frcmaven.wpi.edu/artifactory/release/"
   ],
@@ -13,14 +13,14 @@
     {
       "groupId": "edu.wpi.first.wpinet",
       "artifactId": "wpinet-java",
-      "version": "2024.3.2"
+      "version": "2025.1.1-beta-1"
     }
   ],
   "jniDependencies": [
     {
       "groupId": "edu.wpi.first.wpinet",
       "artifactId": "wpinet-jni",
-      "version": "2024.3.2",
+      "version": "2025.1.1-beta-1",
       "isJar": true,
       "skipInvalidPlatforms": true,
       "validPlatforms": [
@@ -38,7 +38,7 @@
     {
       "groupId": "edu.wpi.first.wpinet",
       "artifactId": "wpinet-cpp",
-      "version": "2024.3.2",
+      "version": "2025.1.1-beta-1",
       "headerClassifier": "headers",
       "binaryPlatforms": [
         "linuxarm32",

@@ -1,9 +1,9 @@
 {
   "fileName": "wpilib-xrpVendordep.json",
   "name": "xrpVendordep",
-  "version": "2024.3.2",
-  "frcYear": 2024,
-  "uuid": "1332abf6-f01d-42a3-aa1c-f2d4c48636be",
+  "version": "2025.1.1-beta-1",
+  "frcYear": 2025,
+  "uuid": "d0a88c31-2db1-4a46-b0a8-5c475f6d4799",
   "mavenUrls": [
     "https://frcmaven.wpi.edu/artifactory/release/"
   ],
@@ -13,7 +13,7 @@
     {
       "groupId": "edu.wpi.first.xrpVendordep",
       "artifactId": "xrpVendordep-java",
-      "version": "2024.3.2"
+      "version": "2025.1.1-beta-1"
     }
   ],
   "jniDependencies": [],
@@ -21,7 +21,7 @@
     {
       "groupId": "edu.wpi.first.xrpVendordep",
       "artifactId": "xrpVendordep-cpp",
-      "version": "2024.3.2",
+      "version": "2025.1.1-beta-1",
       "headerClassifier": "headers",
       "binaryPlatforms": [
         "linuxarm32",

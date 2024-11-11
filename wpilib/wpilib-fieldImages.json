@@ -1,9 +1,9 @@
 {
   "fileName": "wpilib-fieldImages.json",
   "name": "fieldImages",
-  "version": "2024.3.2",
-  "frcYear": 2024,
-  "uuid": "805d1b5f-254c-4e49-9039-ddf4972ae045",
+  "version": "2025.1.1-beta-1",
+  "frcYear": 2025,
+  "uuid": "3ef6072f-3fd7-4b6f-946d-15c25c206a6f",
   "mavenUrls": [
     "https://frcmaven.wpi.edu/artifactory/release/"
   ],
@@ -13,7 +13,7 @@
     {
       "groupId": "edu.wpi.first.fieldImages",
       "artifactId": "fieldImages-java",
-      "version": "2024.3.2"
+      "version": "2025.1.1-beta-1"
     }
   ],
   "jniDependencies": [],
@@ -21,7 +21,7 @@
     {
       "groupId": "edu.wpi.first.fieldImages",
       "artifactId": "fieldImages-cpp",
-      "version": "2024.3.2",
+      "version": "2025.1.1-beta-1",
       "headerClassifier": "headers",
       "binaryPlatforms": [
         "linuxarm32",

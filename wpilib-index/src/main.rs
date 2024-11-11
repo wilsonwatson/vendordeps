@@ -4,8 +4,8 @@ use reqwest::Client;
 use serde::Deserialize;
 use vendordeps::{CppDependency, JavaDependency, JniDependency};
 
-const LATEST_VERSION: &'static str = "2024.3.2";
-const YEAR: u32 = 2024;
+const LATEST_VERSION: &'static str = "2025.1.1-beta-1";
+const YEAR: u32 = 2025;
 
 #[derive(Deserialize, Debug)]
 struct FolderItem {

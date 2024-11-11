@@ -1,9 +1,9 @@
 {
   "fileName": "wpilib-wpilibc.json",
   "name": "wpilibc",
-  "version": "2024.3.2",
-  "frcYear": 2024,
-  "uuid": "c4e4659c-a366-45c8-a860-d77d66d7fa44",
+  "version": "2025.1.1-beta-1",
+  "frcYear": 2025,
+  "uuid": "f909509a-97a2-47a9-b0dc-1f037b4e4c37",
   "mavenUrls": [
     "https://frcmaven.wpi.edu/artifactory/release/"
   ],
@@ -15,7 +15,7 @@
     {
       "groupId": "edu.wpi.first.wpilibc",
       "artifactId": "wpilibc-cpp",
-      "version": "2024.3.2",
+      "version": "2025.1.1-beta-1",
       "headerClassifier": "headers",
       "binaryPlatforms": [
         "linuxarm32",

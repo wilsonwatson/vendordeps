@@ -1,9 +1,9 @@
 {
   "fileName": "wpilib-apriltags.json",
   "name": "apriltags",
-  "version": "2024.3.2",
-  "frcYear": 2024,
-  "uuid": "2f15a34f-0d28-4660-9f9a-0467dd8a5f83",
+  "version": "2025.1.1-beta-1",
+  "frcYear": 2025,
+  "uuid": "3255b91a-6db4-4330-959f-c60df462ed6c",
   "mavenUrls": [
     "https://frcmaven.wpi.edu/artifactory/release/"
   ],
@@ -13,7 +13,7 @@
     {
       "groupId": "edu.wpi.first.apriltags",
       "artifactId": "apriltags-java",
-      "version": "2024.3.2"
+      "version": "2025.1.1-beta-1"
     }
   ],
   "jniDependencies": [],

@@ -1,9 +1,9 @@
 {
   "fileName": "wpilib-ntcore.json",
   "name": "ntcore",
-  "version": "2024.3.2",
-  "frcYear": 2024,
-  "uuid": "6a48f896-75d8-482b-8a77-2b958c00dfb9",
+  "version": "2025.1.1-beta-1",
+  "frcYear": 2025,
+  "uuid": "d011b41a-83cb-44eb-9bd4-03ef051e22ba",
   "mavenUrls": [
     "https://frcmaven.wpi.edu/artifactory/release/"
   ],
@@ -13,14 +13,14 @@
     {
       "groupId": "edu.wpi.first.ntcore",
       "artifactId": "ntcore-java",
-      "version": "2024.3.2"
+      "version": "2025.1.1-beta-1"
     }
   ],
   "jniDependencies": [
     {
       "groupId": "edu.wpi.first.ntcore",
       "artifactId": "ntcore-jni",
-      "version": "2024.3.2",
+      "version": "2025.1.1-beta-1",
       "isJar": true,
       "skipInvalidPlatforms": true,
       "validPlatforms": [
@@ -38,7 +38,7 @@
     {
       "groupId": "edu.wpi.first.ntcore",
       "artifactId": "ntcore-cpp",
-      "version": "2024.3.2",
+      "version": "2025.1.1-beta-1",
       "headerClassifier": "headers",
       "binaryPlatforms": [
         "linuxarm32",

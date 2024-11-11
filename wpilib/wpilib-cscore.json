@@ -1,9 +1,9 @@
 {
   "fileName": "wpilib-cscore.json",
   "name": "cscore",
-  "version": "2024.3.2",
-  "frcYear": 2024,
-  "uuid": "63a2d361-77ef-49fd-82b4-3b59227095bf",
+  "version": "2025.1.1-beta-1",
+  "frcYear": 2025,
+  "uuid": "bb9c0b77-e0c6-45e1-81e6-344287c5588a",
   "mavenUrls": [
     "https://frcmaven.wpi.edu/artifactory/release/"
   ],
@@ -13,14 +13,14 @@
     {
       "groupId": "edu.wpi.first.cscore",
       "artifactId": "cscore-java",
-      "version": "2024.3.2"
+      "version": "2025.1.1-beta-1"
     }
   ],
   "jniDependencies": [
     {
       "groupId": "edu.wpi.first.cscore",
       "artifactId": "cscore-jni",
-      "version": "2024.3.2",
+      "version": "2025.1.1-beta-1",
       "isJar": true,
       "skipInvalidPlatforms": true,
       "validPlatforms": [
@@ -38,7 +38,7 @@
     {
       "groupId": "edu.wpi.first.cscore",
       "artifactId": "cscore-cpp",
-      "version": "2024.3.2",
+      "version": "2025.1.1-beta-1",
       "headerClassifier": "headers",
       "binaryPlatforms": [
         "linuxarm32",

@@ -1,9 +1,9 @@
 {
   "fileName": "wpilib-hal.json",
   "name": "hal",
-  "version": "2024.3.2",
-  "frcYear": 2024,
-  "uuid": "904c5839-4492-4078-94cf-f95659de1262",
+  "version": "2025.1.1-beta-1",
+  "frcYear": 2025,
+  "uuid": "776b1043-7ba3-4ae9-8eba-c833211a61d2",
   "mavenUrls": [
     "https://frcmaven.wpi.edu/artifactory/release/"
   ],
@@ -13,14 +13,14 @@
     {
       "groupId": "edu.wpi.first.hal",
       "artifactId": "hal-java",
-      "version": "2024.3.2"
+      "version": "2025.1.1-beta-1"
     }
   ],
   "jniDependencies": [
     {
       "groupId": "edu.wpi.first.hal",
       "artifactId": "hal-jni",
-      "version": "2024.3.2",
+      "version": "2025.1.1-beta-1",
       "isJar": true,
       "skipInvalidPlatforms": true,
       "validPlatforms": [
@@ -38,7 +38,7 @@
     {
       "groupId": "edu.wpi.first.hal",
       "artifactId": "hal-cpp",
-      "version": "2024.3.2",
+      "version": "2025.1.1-beta-1",
       "headerClassifier": "headers",
       "binaryPlatforms": [
         "linuxarm32",

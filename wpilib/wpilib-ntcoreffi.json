@@ -1,9 +1,9 @@
 {
   "fileName": "wpilib-ntcoreffi.json",
   "name": "ntcoreffi",
-  "version": "2024.3.2",
-  "frcYear": 2024,
-  "uuid": "c304e9c9-afd7-4fb0-800f-a587af9dcfbb",
+  "version": "2025.1.1-beta-1",
+  "frcYear": 2025,
+  "uuid": "8281f53a-c098-4f2b-9bb6-13dba11198d9",
   "mavenUrls": [
     "https://frcmaven.wpi.edu/artifactory/release/"
   ],
@@ -15,7 +15,7 @@
     {
       "groupId": "edu.wpi.first.ntcoreffi",
       "artifactId": "ntcoreffi-cpp",
-      "version": "2024.3.2",
+      "version": "2025.1.1-beta-1",
       "headerClassifier": "headers",
       "binaryPlatforms": [
         "linuxarm32",

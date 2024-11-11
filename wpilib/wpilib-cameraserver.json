@@ -1,9 +1,9 @@
 {
   "fileName": "wpilib-cameraserver.json",
   "name": "cameraserver",
-  "version": "2024.3.2",
-  "frcYear": 2024,
-  "uuid": "1ae8b228-f945-4c36-ae22-9ace9138546b",
+  "version": "2025.1.1-beta-1",
+  "frcYear": 2025,
+  "uuid": "cec37278-1577-47d5-acb2-2183995fd952",
   "mavenUrls": [
     "https://frcmaven.wpi.edu/artifactory/release/"
   ],
@@ -13,7 +13,7 @@
     {
       "groupId": "edu.wpi.first.cameraserver",
       "artifactId": "cameraserver-java",
-      "version": "2024.3.2"
+      "version": "2025.1.1-beta-1"
     }
   ],
   "jniDependencies": [],
@@ -21,7 +21,7 @@
     {
       "groupId": "edu.wpi.first.cameraserver",
       "artifactId": "cameraserver-cpp",
-      "version": "2024.3.2",
+      "version": "2025.1.1-beta-1",
       "headerClassifier": "headers",
       "binaryPlatforms": [
         "linuxarm32",

@@ -1,9 +1,9 @@
 {
   "fileName": "wpilib-wpilibOldCommands.json",
   "name": "wpilibOldCommands",
-  "version": "2024.3.2",
-  "frcYear": 2024,
-  "uuid": "4435633c-cfd0-4db8-a225-536e72e317d6",
+  "version": "2025.1.1-beta-1",
+  "frcYear": 2025,
+  "uuid": "b90cf29e-c9e4-4346-a08b-482240a936fe",
   "mavenUrls": [
     "https://frcmaven.wpi.edu/artifactory/release/"
   ],
@@ -13,7 +13,7 @@
     {
       "groupId": "edu.wpi.first.wpilibOldCommands",
       "artifactId": "wpilibOldCommands-java",
-      "version": "2024.3.2"
+      "version": "2025.1.1-beta-1"
     }
   ],
   "jniDependencies": [],

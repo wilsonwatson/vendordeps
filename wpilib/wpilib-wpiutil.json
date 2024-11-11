@@ -1,9 +1,9 @@
 {
   "fileName": "wpilib-wpiutil.json",
   "name": "wpiutil",
-  "version": "2024.3.2",
-  "frcYear": 2024,
-  "uuid": "4e804d12-a703-4cf7-aca4-63cc0822e3f3",
+  "version": "2025.1.1-beta-1",
+  "frcYear": 2025,
+  "uuid": "243e0267-1215-458f-9be2-2cbb4b2bb2e5",
   "mavenUrls": [
     "https://frcmaven.wpi.edu/artifactory/release/"
   ],
@@ -13,14 +13,14 @@
     {
       "groupId": "edu.wpi.first.wpiutil",
       "artifactId": "wpiutil-java",
-      "version": "2024.3.2"
+      "version": "2025.1.1-beta-1"
     }
   ],
   "jniDependencies": [
     {
       "groupId": "edu.wpi.first.wpiutil",
       "artifactId": "wpiutil-jni",
-      "version": "2024.3.2",
+      "version": "2025.1.1-beta-1",
       "isJar": true,
       "skipInvalidPlatforms": true,
       "validPlatforms": [
@@ -38,7 +38,7 @@
     {
       "groupId": "edu.wpi.first.wpiutil",
       "artifactId": "wpiutil-cpp",
-      "version": "2024.3.2",
+      "version": "2025.1.1-beta-1",
       "headerClassifier": "headers",
       "binaryPlatforms": [
         "linuxarm32",

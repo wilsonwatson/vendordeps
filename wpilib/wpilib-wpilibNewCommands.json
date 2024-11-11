@@ -1,9 +1,9 @@
 {
   "fileName": "wpilib-wpilibNewCommands.json",
   "name": "wpilibNewCommands",
-  "version": "2024.3.2",
-  "frcYear": 2024,
-  "uuid": "4cce1ad3-68e0-42e1-a015-995db66acdfc",
+  "version": "2025.1.1-beta-1",
+  "frcYear": 2025,
+  "uuid": "35d25eea-5533-4f95-b669-d39e118210fd",
   "mavenUrls": [
     "https://frcmaven.wpi.edu/artifactory/release/"
   ],
@@ -13,7 +13,7 @@
     {
       "groupId": "edu.wpi.first.wpilibNewCommands",
       "artifactId": "wpilibNewCommands-java",
-      "version": "2024.3.2"
+      "version": "2025.1.1-beta-1"
     }
   ],
   "jniDependencies": [],
@@ -21,7 +21,7 @@
     {
       "groupId": "edu.wpi.first.wpilibNewCommands",
       "artifactId": "wpilibNewCommands-cpp",
-      "version": "2024.3.2",
+      "version": "2025.1.1-beta-1",
       "headerClassifier": "headers",
       "binaryPlatforms": [
         "linuxarm32",
